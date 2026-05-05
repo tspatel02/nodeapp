@@ -27,11 +27,11 @@ stages:
     - script: |
         npm install
         npm run build --if-present
-      displayName: 'Install and Build (NO TEST STEP)'
+      displayName: 'Install and Build'
 
-    # Create ZIP artifact (required for deployment)
+    # Create ZIP artifact
     - task: ArchiveFiles@2
-      displayName: 'Archive Application'
+      displayName: 'Create Deployment Package'
       inputs:
         rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
         includeRootFolder: false
@@ -39,9 +39,10 @@ stages:
         archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
         replaceExistingArchive: true
 
+    # Publish artifact correctly
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/app.zip'
         artifactName: drop
 
 
@@ -68,12 +69,18 @@ stages:
           - download: current
             artifact: drop
 
+          # IMPORTANT FIX: correct file path
           - task: AzureWebApp@1
             displayName: 'Deploy to Azure Web App'
             inputs:
               azureSubscription: $(azureSubscription)
               appType: webAppLinux
               appName: $(webAppName)
+
+              # FIXED PATH
               package: '$(Pipeline.Workspace)/drop/app.zip'
+
               runtimeStack: 'NODE|22-lts'
-              startUpCommand: 'node app.js'
+
+              # SAFE OPTION (recommended change below)
+              startUpCommand: 'npm start'
