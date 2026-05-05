@@ -1,0 +1,32 @@
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: ciPipeline
+    source: <CI_PIPELINE_NAME>
+    trigger:
+      branches:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- download: ciPipeline
+  artifact: drop
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Azure subscription 1(fcbc5c99-308d-47ee-9f19-c7f282444dc6)'
+    appName: 'mysamplens12345'
+    package: '$(Pipeline.Workspace)/ciPipeline/drop' 
+
+    - task: AzureRmWebAppDeployment@5
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Azure subscription 1(fcbc5c99-308d-47ee-9f19-c7f282444dc6)'
+        appType: 'webAppLinux'
+        WebAppName: 'mysamplens12345'
+        packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+        RuntimeStack: 'NODE|22-lts'
+        DeploymentTypeLinux: 'oneDeploy'
