@@ -3,7 +3,7 @@ trigger: none
 resources:
   pipelines:
   - pipeline: ciPipeline
-    source: azure-pipelines.yml
+    source: azure-pipelines   # 🔥 MUST MATCH CI PIPELINE NAME IN AZURE DEVOPS UI
     trigger:
       branches:
       - main
